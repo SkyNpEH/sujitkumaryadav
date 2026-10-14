@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Sign in | Sujit Official Website</title>
+  <link rel="icon" type="image/x-icon" href="assets/favicon.ico" />
+  <link href="https://fonts.googleapis.com/css?family=Montserrat:400,700" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css?family=Lato:400,700" rel="stylesheet" />
+  <style>
+    :root {
+      --teal: #1abc9c;
+      --ink: #1c2331;
+      --white: #ffffff;
+      --error: #ffd7d7;
+    }
+    * { box-sizing: border-box; }
+    html, body { height: 100%; margin: 0; }
+    body {
+      background: var(--teal);
+      color: var(--white);
+      font-family: "Lato", sans-serif;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+    main { width: 100%; max-width: 360px; text-align: center; }
+    .avatar {
+      width: 120px; height: 120px; border-radius: 50%;
+      object-fit: cover; border: 4px solid var(--white);
+      margin-bottom: 20px;
+    }
+    h1 {
+      font-family: "Montserrat", sans-serif;
+      font-weight: 700; font-size: 2.4rem;
+      margin: 0 0 4px; letter-spacing: 1px;
+    }
+    p.sub { margin: 0 0 28px; font-size: 1.05rem; }
+    form { text-align: left; }
+    label { display: block; font-weight: 700; margin: 0 0 6px; }
+    input {
+      width: 100%; padding: 12px 14px; margin-bottom: 16px;
+      border: 2px solid transparent; border-radius: 6px;
+      font: inherit; color: var(--ink); background: var(--white);
+    }
+    input:focus-visible, button:focus-visible {
+      outline: 3px solid var(--ink); outline-offset: 2px;
+    }
+    button {
+      width: 100%; padding: 12px; border: 0; border-radius: 6px;
+      background: var(--ink); color: var(--white);
+      font: 700 1rem "Montserrat", sans-serif; cursor: pointer;
+    }
+    button:disabled { opacity: .6; cursor: wait; }
+    #msg { min-height: 1.4em; margin: 14px 0 0; color: var(--error); font-weight: 700; text-align: center; }
+  </style>
+</head>
+<body>
+  <main>
+    <img class="avatar" src="profile.jpg" alt="" />
+    <h1>Sujit</h1>
+    <p class="sub">Sign in to continue</p>
+
+    <form id="login" autocomplete="on">
+      <label for="user">Username</label>
+      <input id="user" name="username" type="text" autocomplete="username" required />
+      <label for="pass">Password</label>
+      <input id="pass" name="password" type="password" autocomplete="current-password" required />
+      <button id="btn" type="submit">Sign in</button>
+      <p id="msg" role="alert"></p>
+    </form>
+  </main>
+
+  <script>
+    // ---- EDIT THESE ----
+    // Username in plain text; password stored as a SHA-256 hash (not plain text).
+    // Default login: username "sujit" / password "changeme"  -> CHANGE IT.
+    // To make a new hash: open your browser console (F12) on any page and run:
+    //   crypto.subtle.digest("SHA-256", new TextEncoder().encode("your-password"))
+    //     .then(b => console.log([...new Uint8Array(b)].map(x => x.toString(16).padStart(2,"0")).join("")))
+    const USERNAME = "sujit";
+    const PASSWORD_HASH = "057ba03d6c44104863dc7361fe4578965d1887360f90a0895882e58a6248fc86";
+    const HOME_PAGE = "index.html";
+    // --------------------
+
+    async function sha256(text) {
+      const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(text));
+      return [...new Uint8Array(buf)].map(b => b.toString(16).padStart(2, "0")).join("");
+    }
+
+    // Already signed in? Go straight to the site.
+    if (sessionStorage.getItem("authed") === "yes") location.replace(HOME_PAGE);
+
+    const form = document.getElementById("login");
+    const msg = document.getElementById("msg");
+    const btn = document.getElementById("btn");
+
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      msg.textContent = "";
+      btn.disabled = true;
+      const user = document.getElementById("user").value.trim();
+      const hash = await sha256(document.getElementById("pass").value);
+      if (user === USERNAME && hash === PASSWORD_HASH) {
+        sessionStorage.setItem("authed", "yes");
+        location.replace(HOME_PAGE);
+      } else {
+        msg.textContent = "Username or password is incorrect. Try again.";
+        btn.disabled = false;
+        document.getElementById("pass").value = "";
+        document.getElementById("pass").focus();
+      }
+    });
+  </script>
+</body>
+</html>
